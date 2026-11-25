@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Happy Monthsary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: soft, dreamy lavender — one flower made of us.
+   IDEA: a 3D daisy whose 30 petals are photos; every scroll turns the next petal to face her; the last scroll bursts it into the message.
+   PICTURE: the tilted flower ring with the selfie as its centre, front petal lifted big toward the viewer.
+   COLOUR and TYPE: lavender ground, violet accent, lilac blooms; deep violet night. Fraunces italic, Caveat letter.
+   LAYOUT: pinned full-screen stage with one snap step per petal → burst message → letter card. */
+:root{color-scheme:light dark;
+  --bg:light-dark(#f4eeff,#1d1430);
+  --bg2:light-dark(#e9dcff,#2a1d45);
+  --ink:light-dark(#4b2f78,#efe4ff);
+  --violet:light-dark(#8a5cd6,#c3a3ff);
+  --paper:light-dark(#fdfbff,#2b1f44);
+  --line:light-dark(#dccbfb,#4a3870);
+  --shadow:light-dark(rgba(80,40,140,.25),rgba(0,0,0,.55))}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{-webkit-text-size-adjust:100%;scroll-snap-type:y mandatory}
+body{margin:0;background:radial-gradient(120% 80% at 50% 40%,var(--bg) 40%,var(--bg2));background-attachment:fixed;color:var(--ink);font:16px/1.5 system-ui,sans-serif;overflow-x:clip}
+.bgflowers{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* pinned stage */
+.scroller{position:relative;z-index:1}
+.stage{position:sticky;top:0;height:100svh;overflow:hidden}
+.steps{margin-top:-100svh}
+.step{height:100svh;scroll-snap-align:start;scroll-snap-stop:always}
+
+.petal{position:absolute;left:0;top:0;padding:0;border:3px solid #fff;background:#efe6ff;overflow:hidden;
+  border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;box-shadow:0 8px 18px var(--shadow);will-change:transform,width,height;transform-origin:50% 50%}
+.petal img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.petal:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.core{position:absolute;left:0;top:0;border-radius:50%;overflow:hidden;border:6px solid #fff;box-shadow:0 0 0 6px #f6d77a,0 14px 30px var(--shadow);will-change:transform;z-index:500}
+.core img{width:100%;height:100%;object-fit:cover;object-position:56% 50%;display:block}
+
+.hud{position:absolute;left:0;right:0;bottom:max(env(safe-area-inset-bottom),22px);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:900;pointer-events:none;transition:opacity .4s}
+.count{font:600 italic 20px Fraunces,Georgia,serif;color:var(--violet)}
+.hint{color:var(--violet);display:flex;flex-direction:column;align-items:center;font:600 13px system-ui;letter-spacing:.02em;opacity:.85}
+.hint svg{width:24px;height:24px;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(5px)}}
+.dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:260px}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--line);transition:background .3s,transform .3s}
+.dots i.on{background:var(--violet);transform:scale(1.6)}
+
+.msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:0 24px;z-index:800;pointer-events:none;opacity:0}
+.msg h1{font:600 italic clamp(46px,13vw,64px)/1.02 Fraunces,Georgia,serif;color:var(--violet);margin:0;text-wrap:balance}
+.msg p{margin:16px 0 0;font:600 14px system-ui;color:var(--ink);opacity:.7}
+.spark{position:absolute;left:50%;top:50%;pointer-events:none;z-index:790}
+.spark svg{position:absolute;overflow:visible}
+
+/* music */
+.music{position:fixed;top:max(env(safe-area-inset-top),14px);right:14px;z-index:1500;height:44px;min-width:44px;padding:0 16px 0 12px;border:0;border-radius:999px;
+  background:var(--paper);color:var(--violet);box-shadow:0 6px 16px var(--shadow);display:flex;align-items:center;gap:8px;font:700 14px system-ui}
+.music svg{width:20px;height:20px;flex:none}
+.music.playing{padding:0;width:44px;justify-content:center}
+.music.playing .lbl{display:none}
+.music.playing svg{animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.music:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+
+/* letter */
+.letter-sec{position:relative;z-index:1;scroll-snap-align:start;min-height:100svh;padding:max(env(safe-area-inset-top),40px) 18px max(env(safe-area-inset-bottom),70px)}
+.letter{max-width:480px;margin:0 auto;position:relative;background:var(--paper);border-radius:26px;padding:34px 24px 30px;box-shadow:0 14px 30px var(--shadow)}
+.letter h2{font:600 italic 34px/1.05 Fraunces,Georgia,serif;color:var(--violet);margin:0 0 14px}
+.letter p{font:500 23px/1.35 Caveat,cursive;margin:0 0 18px}
+.letter p:last-child{margin:0}
+.letter .sig{text-align:right;font-weight:700;color:var(--violet)}
+.letter .deco{position:absolute;width:96px;pointer-events:none}
+.letter .deco.tl{left:-26px;top:-36px}.letter .deco.br{right:-24px;bottom:-40px}
+.js .letter p,.js .letter h2{opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease}
+.js .letter .show{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){.hint svg{animation:none}.js .letter p,.js .letter h2{opacity:1;transform:none}}
+
+/* viewer */
+.viewer{position:fixed;inset:0;z-index:2000;background:var(--bg);display:none;flex-direction:column}
+.viewer.on{display:flex}
+.vtop{display:flex;justify-content:flex-end;padding:max(env(safe-area-inset-top),12px) 14px 6px}
+.ibtn{width:44px;height:44px;border-radius:50%;border:0;background:var(--paper);box-shadow:0 4px 0 var(--line);display:grid;place-items:center}
+.ibtn svg{width:20px;height:20px}
+.vimg{flex:1;display:grid;place-items:center;padding:10px 22px 40px}
+.vimg img{max-width:100%;max-height:78vh;border-radius:18px;border:6px solid #fff;box-shadow:0 12px 26px var(--shadow)}
+</style>
+</head>
+<body>
+<svg class="bgflowers" id="bgflowers" aria-hidden="true"></svg>
+
+<button class="music" id="music" type="button" aria-label="Play music" aria-pressed="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 17.5a3 3 0 1 1-2-2.83V5.5l11-2.5v11.5a3 3 0 1 1-2-2.83V7.1l-7 1.6z"/></svg><span class="lbl">Play music</span></button>
+<section class="scroller" id="scroller">
+  <div class="stage" id="stage">
+    <div class="core" id="core"><img id="coreImg" alt="Us"></div>
+    <div class="msg" id="msg"><div><h1>Happy monthsary, babe</h1></div></div>
+    <div class="spark" id="spark" aria-hidden="true"></div>
+    <div class="hud" id="hud">
+      <span class="hint" id="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>scroll</span>
+    </div>
+  </div>
+  <div class="steps" id="steps"></div>
+</section>
+
+<section class="letter-sec">
+  <article class="letter" id="letter">
+    <span class="deco tl" id="decoA"></span>
+    <h2>Hi baby,</h2>
+    <p>Happy monthsary baby, babe, beh, siz, bebe ko. Di ko nakalimutan yung araw na to, masyado lang akong busy huhuhu, pag pasensyahan mo na ang boyfriend mo. Sorry kung mas nagiging priority ko yung work, hindi ko kasi talaga pwedeng balewalain to. Well, I'm not saying mas pipiliin ko work kaysa sayo. Ginagawa ko rin naman to kasi I want you to experience the best of all things in life kasi deserve mo yun.</p>
+    <p>I love you, thank you for loving me. I know madalang ka mag I love you sakin lately but that doesn't matter because you always make me feel loved kahit di mo sabihin, and for that I'm so grateful.</p>
+    <p>Please bawasan mo pagseselos mo kay Bia, wala akong pake don, trust me it's just pure work. Kahit na mahinahon ako makipag usap sakanya wala yun meaning para sakin dahil ikaw lang ang aking honey bunch sugar plum.</p>
+    <p>I promise to be better, specially sa comms ko with you, at mas lalawakan ko pa ang pag-iisip ko.</p>
+    <p>I love you so much!!</p>
+    <p>PS. Libre mo naman ako mamaya :p</p>
+    <p class="sig">Happy Monthsary beh!</p>
+    <span class="deco br" id="decoB"></span>
+  </article>
+</section>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Photo">
+  <div class="vtop"><button class="ibtn" id="vclose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="vimg"><img id="vimg" alt=""></div>
+</div>
+
+<script>
+{
+/* ============ EDIT HERE ============ */
+const CENTER = "photos/24.jpg";   // photo in the middle of the flower
+const PHOTOS = Array.from({length: 30}, (_, i) => `photos/${String(i + 1).padStart(2, "0")}.jpg`);
+/* =================================== */
+
+document.documentElement.classList.add("js");
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const N = PHOTOS.length, STEP = 360 / N;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ease = t => t * t * (3 - 2 * t);
+
+/* drawn lilac flowers */
+const PAL = [["#d9c2ff","#ffd86b"],["#c6a8f5","#fff1a8"],["#ffffff","#f6d77a"],["#e6d4ff","#f9c74f"],["#f3c6ec","#ffe08a"]];
+const drawn = (x, y, r, i, n = 5, rot = 0) => {
+  const [p, c] = PAL[i % PAL.length];
+  let s = `<g transform="translate(${x} ${y}) rotate(${rot})">`;
+  for (let k = 0; k < n; k++) s += `<ellipse cy="${-r * .55}" rx="${r * .42}" ry="${r * .6}" fill="${p}" stroke="rgba(90,50,150,.15)" transform="rotate(${k * 360 / n})"/>`;
+  return s + `<circle r="${r * .28}" fill="${c}"/></g>`;
+};
+const leaf = (x, y, l, rot) => `<path transform="translate(${x} ${y}) rotate(${rot})" d="M0 0 C ${l*.35} ${-l*.3} ${l*.75} ${-l*.25} ${l} 0 C ${l*.75} ${l*.25} ${l*.35} ${l*.3} 0 0Z" fill="#a9c9a4"/>`;
+const sprig = s => `<svg viewBox="0 0 100 100">${leaf(50,60,40,-130)}${leaf(50,60,40,-40)}${drawn(50,50,30,s,5,15)}${drawn(78,30,14,s+1,5,30)}</svg>`;
+$("decoA").innerHTML = sprig(0);
+$("decoB").innerHTML = sprig(3);
+
+const bg = $("bgflowers");
+const drawBg = () => {
+  const W = innerWidth, H = innerHeight;
+  bg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  let s = "", rnd = 11;
+  const r = () => (rnd = (rnd * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0, n = Math.round(W * H / 24000); i < n; i++) s += `<g opacity=".5">${drawn(r() * W, r() * H, 6 + r() * 7, i, 5, r() * 90)}</g>`;
+  bg.innerHTML = s;
+};
+
+/* build */
+const stage = $("stage");
+$("coreImg").src = CENTER;
+stage.insertAdjacentHTML("afterbegin", PHOTOS.map((src, i) =>
+  `<button class="petal" type="button" data-i="${i}" aria-label="Photo ${i + 1}" tabindex="-1"><img src="${esc(src)}" alt="" loading="${i < 6 || i > N - 3 ? "eager" : "lazy"}"></button>`).join(""));
+const petals = [...stage.querySelectorAll(".petal")];
+$("steps").innerHTML = Array.from({length: N + 2}, () => `<div class="step"></div>`).join("");
+const rand = petals.map((_, i) => ({s: ((i * 73) % 100) / 100, t: ((i * 37) % 100) / 100}));
+
+/* sparkle flowers for the burst */
+$("spark").innerHTML = Array.from({length: 16}, (_, i) => `<svg width="40" height="40" viewBox="-20 -20 40 40" data-a="${i * 22.5 + (i % 3) * 7}">${drawn(0, 0, 16, i, i % 2 ? 6 : 5)}</svg>`).join("");
+const sparks = [...$("spark").children];
+
+let W, H, R, pw, ph, cx, cy, TILT = 1.02;
+const layout = () => {
+  W = stage.clientWidth; H = stage.clientHeight;
+  const base = Math.min(W, 520, H * 0.62);
+  R = base * 0.36; pw = base * 0.17; ph = base * 0.30;
+  cx = W / 2; cy = H * 0.40;
+  const cs = base * 0.36;
+  $("core").style.width = $("core").style.height = cs + "px";
+  $("core").dataset.s = cs;
+  drawBg();
+};
+
+const angDiff = (a, b) => { let d = ((a - b) % 360 + 540) % 360 - 180; return d; };
+let lastActive = -1;
+
+const paint = () => {
+  const top = $("scroller").offsetTop;
+  const p = reduce ? Math.round((scrollY - top) / H) : (scrollY - top) / H;
+  const bloom = ease(clamp(p / 0.9));
+  const a = clamp(p - 1, 0, N - 1);
+  const rot = 90 - a * STEP;
+  const gate = clamp((p - 0.4) / 0.6) * (1 - clamp((p - N) / 0.35));
+  const e = ease(clamp(p - N));
+  const cosT = Math.cos(TILT), sinT = Math.sin(TILT);
+  const popW = Math.min(W * 0.66, 360), popH = popW * 1.28;
+  const popY = Math.min(H * 0.56, cy + R * cosT + popH * 0.18);
+
+  petals.forEach((el, i) => {
+    const th = i * STEP + rot;
+    const rad = th * Math.PI / 180;
+    const r = R * (0.25 + 0.75 * bloom);
+    let x = r * Math.cos(rad), y = r * Math.sin(rad) * cosT, z = r * Math.sin(rad) * sinT;
+    const persp = 900 / (900 - z);
+    x *= persp; y *= persp;
+    let ang = Math.atan2(y, x) * 180 / Math.PI + 90;
+    let w = pw * persp, h = ph * persp * (0.75 + 0.25 * Math.abs(Math.sin(rad)));
+    let px = cx + x, py = cy + y, zi = Math.round(100 + z), op = 0.25 + 0.75 * bloom;
+
+    const f = ease(clamp(1 - Math.abs(angDiff(th, 90)) / STEP)) * gate;
+    if (f > 0) {
+      px += (cx - px) * f; py += (popY - py) * f;
+      w += (popW - w) * f; h += (popH - h) * f;
+      ang += angDiff(0, ang) * f;
+      zi = 600 + Math.round(f * 100); op = 1;
+    }
+    if (e > 0) {
+      const dx = Math.cos(rad + rand[i].s), dy = Math.sin(rad + rand[i].s);
+      const dist = e * (W * 0.7 + rand[i].t * W * 0.6);
+      px += dx * dist; py += dy * dist; ang += e * (rand[i].t - .5) * 720; op *= 1 - e;
+    }
+    el.style.width = w + "px"; el.style.height = h + "px";
+    el.style.transform = `translate(${px - w / 2}px, ${py - h / 2}px) rotate(${ang}deg)`;
+    el.style.zIndex = zi; el.style.opacity = op;
+    el.tabIndex = f > 0.6 ? 0 : -1;
+  });
+
+  const cs = +$("core").dataset.s;
+  const cScale = (0.7 + 0.3 * bloom) * (1 - e);
+  $("core").style.transform = `translate(${cx - cs / 2}px, ${cy - cs / 2}px) scale(${cScale}) rotate(${-rot * 0.15}deg)`;
+  $("core").style.opacity = 1 - e;
+
+  const m = $("msg");
+  m.style.opacity = e; m.style.transform = `scale(${0.7 + 0.3 * e})`;
+  sparks.forEach((s, i) => {
+    const ang = +s.dataset.a * Math.PI / 180, d = e * (90 + (i % 4) * 30) * (W / 400);
+    s.style.transform = `translate(${Math.cos(ang) * d - 20}px, ${Math.sin(ang) * d * 1.3 - 20}px) rotate(${e * 200}deg) scale(${e * (1 - e * 0.3)})`;
+  });
+  $("spark").style.top = (H * 0.5) + "px";
+
+  $("hint").style.opacity = p < 0.4 ? 1 : 0;
+};
+
+let queued = false;
+addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; paint(); }); } }, {passive: true});
+addEventListener("resize", () => { layout(); paint(); });
+layout(); paint();
+
+/* letter paragraphs fade in */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("show"); io.unobserve(e.target); } }), {threshold: .3});
+document.querySelectorAll(".letter h2, .letter p").forEach(el => io.observe(el));
+
+/* tap the front petal to see the whole photo */
+const viewer = $("viewer");
+let lastFocus = null;
+stage.addEventListener("click", e => {
+  const b = e.target.closest(".petal");
+  if (!b || +b.style.zIndex < 650) return;
+  lastFocus = b;
+  $("vimg").src = PHOTOS[+b.dataset.i];
+  viewer.classList.add("on");
+  $("vclose").focus();
+});
+const close = () => { viewer.classList.remove("on"); if (lastFocus) lastFocus.focus(); };
+$("vclose").addEventListener("click", close);
+viewer.addEventListener("click", e => { if (e.target === viewer || e.target.classList.contains("vimg")) close(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && viewer.classList.contains("on")) close(); });
+/* music: plays an mp3 if MUSIC_FILE is set, otherwise a soft music-box tune made in the browser */
+const MUSIC_FILE = "music.mp3";
+const mBtn = $("music");
+let playing = false, audioEl = null, ctx = null, master = null, timer = null, nextT = 0, stepN = 0;
+const mtof = m => 440 * 2 ** ((m - 69) / 12);
+const CHORDS = [[48,55,60,64,67,72],[45,52,57,60,64,69],[41,48,53,57,60,65],[43,50,55,59,62,67]];
+const MELODY = [76,null,79,null,77,76,74,null, 72,null,76,null,74,72,71,null, 69,null,72,null,77,76,74,null, 74,null,71,null,72,null,null,null];
+const ARP = [0,1,2,3,4,3,2,1];
+const note = (m, t, vol, dur) => {
+  const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
+  o.type = "sine"; o2.type = "triangle";
+  o.frequency.value = mtof(m); o2.frequency.value = mtof(m) * 2;
+  const g2 = ctx.createGain(); g2.gain.value = .12;
+  o.connect(g); o2.connect(g2); g2.connect(g); g.connect(master);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.start(t); o2.start(t); o.stop(t + dur + .05); o2.stop(t + dur + .05);
+};
+const eighth = 60 / 76 / 2;
+const schedule = () => {
+  while (nextT < ctx.currentTime + .25) {
+    const bar = Math.floor(stepN / 8) % 4, ch = CHORDS[bar], pos = stepN % 8;
+    if (pos === 0) note(ch[0] - 12, nextT, .16, 2.4);
+    note(ch[ARP[pos] + 1], nextT, .07, 1.4);
+    const mel = MELODY[stepN % MELODY.length];
+    if (mel) note(mel + 12, nextT, .1, 1.8);
+    nextT += eighth; stepN++;
+  }
+};
+const startSynth = () => {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = .9;
+    const dly = ctx.createDelay(); dly.delayTime.value = .32;
+    const fb = ctx.createGain(); fb.gain.value = .32;
+    const wet = ctx.createGain(); wet.gain.value = .35;
+    master.connect(ctx.destination); master.connect(dly); dly.connect(fb); fb.connect(dly); dly.connect(wet); wet.connect(ctx.destination);
+  }
+  ctx.resume();
+  nextT = ctx.currentTime + .05;
+  timer = setInterval(schedule, 60); schedule();
+};
+const stopSynth = () => { clearInterval(timer); if (ctx) ctx.suspend(); };
+mBtn.addEventListener("click", async () => {
+  try {
+    if (!playing) {
+      if (MUSIC_FILE) { audioEl = audioEl || Object.assign(new Audio(MUSIC_FILE), {loop: true}); await audioEl.play(); }
+      else startSynth();
+    } else {
+      if (audioEl) audioEl.pause(); else stopSynth();
+    }
+    playing = !playing;
+    mBtn.classList.toggle("playing", playing);
+    mBtn.setAttribute("aria-pressed", playing);
+    mBtn.setAttribute("aria-label", playing ? "Pause music" : "Play music");
+  } catch (err) { mBtn.querySelector(".lbl").textContent = "Music unavailable"; }
+});
+}
+</script>
+</body>
+</html>

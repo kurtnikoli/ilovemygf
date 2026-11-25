@@ -129,8 +129,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 <script>
 {
 /* ============ EDIT HERE ============ */
-const CENTER = "photos/24.jpg";   // photo in the middle of the flower
-const PHOTOS = Array.from({length: 30}, (_, i) => `photos/${String(i + 1).padStart(2, "0")}.jpg`);
+const CENTER = "24.jpg";   // photo in the middle of the flower
+const PHOTOS = Array.from({length: 30}, (_, i) => `${String(i + 1).padStart(2, "0")}.jpg`);
 /* =================================== */
 
 document.documentElement.classList.add("js");
